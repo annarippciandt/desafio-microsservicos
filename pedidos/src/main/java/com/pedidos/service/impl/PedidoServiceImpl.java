@@ -2,6 +2,7 @@ package com.pedidos.service.impl;
 
 import com.pedidos.dto.ItemPedidoDTO;
 import com.pedidos.dto.PedidoDTO;
+import com.pedidos.exception.PedidoNotFoundException;
 import com.pedidos.model.ItemPedido;
 import com.pedidos.model.Pedido;
 import com.pedidos.repository.PedidoRepository;
@@ -9,11 +10,9 @@ import com.pedidos.service.PedidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -26,8 +25,8 @@ public class PedidoServiceImpl implements PedidoService {
         return (List<Pedido>) repository.findAll();
     }
 
-    public Pedido getPedidoById(Long id) {
-        return repository.findById(id).orElse(null);
+    public Pedido getPedidoById(Long id) throws PedidoNotFoundException {
+        return repository.findById(id).orElseThrow(PedidoNotFoundException::new);
     }
 
     public void addPedido(PedidoDTO pedido) {
@@ -40,7 +39,8 @@ public class PedidoServiceImpl implements PedidoService {
         repository.save(newPedido);
     }
 
-    public void updatePedido(PedidoDTO pedido, Long id) {
+    public void updatePedido(PedidoDTO pedido, Long id) throws PedidoNotFoundException {
+        repository.findById(id).orElseThrow(PedidoNotFoundException::new);
         var pedidoUpdate = Pedido
                 .builder()
                 .status(pedido.getStatus())
@@ -49,6 +49,7 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     public void deletePedidoById(Long id) {
+        repository.findById(id).orElseThrow(PedidoNotFoundException::new);
         repository.deleteById(id);
     }
 
@@ -64,10 +65,10 @@ public class PedidoServiceImpl implements PedidoService {
     private Set<ItemPedido> itensProvider(Set<ItemPedidoDTO> itens) {
         Set<ItemPedido> itensList = new HashSet<>();
 
-       for (ItemPedidoDTO itemPedidoDTO : itens) {
-           var item = itemProvider(itemPedidoDTO);
-           itensList.add(item);
-       }
-       return itensList;
+        for (ItemPedidoDTO itemPedidoDTO : itens) {
+            var item = itemProvider(itemPedidoDTO);
+            itensList.add(item);
+        }
+        return itensList;
     }
 }
